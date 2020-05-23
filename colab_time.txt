@@ -1,0 +1,18 @@
+
+
+function ClickConnect() {    
+    var buttons = document.querySelectorAll("colab-dialog.yes-no-dialog paper-button#cancel");
+    buttons.forEach(function(btn) { btn.click(); }); console.log("1분마다 자동 재연결");
+    document.querySelector("#top-toolbar > colab-connect-button").click();
+    }
+setInterval(ClickConnect,1000*60);
+
+
+
+function CleanCurrentOutput(){
+    var btn = document.querySelector(".output-icon.clear_outputs_enabled.output-icon-selected[title$='현재 실행 중...'] iron-icon[command=clear-focused-or-selected-outputs]");
+    if(btn) {
+        console.log("30분마다 출력 지우기"); btn.click();
+        }
+    }
+setInterval(CleanCurrentOutput,1000*60*30);

@@ -1,0 +1,69 @@
+Sound:
+    Spectrogram_Dim: 1025
+    Mel_Dim: 80
+    Frame_Length: 1024
+    Frame_Shift: 256
+    Sample_Rate: 16000
+    Max_Abs_Mel: 4
+
+WaveNet:
+    Residual_Channels: 64
+    ResConvGLU:
+        Blocks: 3
+        Stacks_in_Block: 10
+        Gate_Channels: 128
+        Kernel_Size: 3
+        Skip_Channels: 64
+        Dropout_Rate: 0.0
+    Upsample:
+        Scales: [4, 4, 4, 4]
+        Pad: 2
+
+Discriminator:
+    Stacks: 10
+    Channels: 64
+    Kernel_Size: 3    
+
+STFT_Loss_Resolution:
+    FFT_Sizes: [1024, 2048, 512]
+    Shfit_Lengths: [120, 240, 50]
+    Win_Lengths: [600, 1200, 240]
+
+Train:
+    Use_Pattern_Cache: true
+    Pattern_Path: 'C:/Pattern/WN.Pattern.LJFV'
+    Metadata_File: 'METADATA.PICKLE'
+    Num_Workers: 2
+    Batch_Size: 6    
+    Wav_Length: 25600
+    Max_Pattern_Queue: 100          
+    Learning_Rate:
+        Discriminator: 
+            Initial: 5.0e-5
+            Epsilon: 1.0e-6
+            Decay_Step: 200000
+            Decay_Rate: 0.5            
+        Generator : 
+            Initial: 1.0e-4
+            Epsilon: 1.0e-6
+            Decay_Step: 200000
+            Decay_Rate: 0.5
+    Adversarial_Weight: 4.0
+    Discriminator_Delay: 100000
+    ADAM:
+        Beta1: 0.9
+        Beta2: 0.999
+        Epsilon: 1.0e-7
+    Generator_Gradient_Norm: 10.0
+    Discriminator_Gradient_Norm: 1.0
+    Max_Step: 1000
+    Checkpoint_Save_Interval: 5000
+    Logging_Interval: 100
+    Evaluation_Interval: 100
+    Initial_Inference: false
+
+Use_Mixed_Precision: false
+Inference_Path: 'D:/PWGAN.LJFV.Results/Inference'
+Checkpoint_Path: 'D:/PWGAN.LJFV.Results/Checkpoint'
+Log_Path: 'D:/PWGAN.LJFV.Results/Log'
+Device: '0'
