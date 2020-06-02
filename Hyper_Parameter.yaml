@@ -56,10 +56,10 @@ Train:
         Epsilon: 1.0e-7
     Generator_Gradient_Norm: 10.0
     Discriminator_Gradient_Norm: 1.0
-    Max_Step: 1000
+    Max_Step: 400000
     Checkpoint_Save_Interval: 5000
     Logging_Interval: 100
-    Evaluation_Interval: 100
+    Evaluation_Interval: 1000
     Initial_Inference: false
 
 Use_Mixed_Precision: false

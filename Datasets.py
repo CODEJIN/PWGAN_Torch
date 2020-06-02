@@ -69,6 +69,25 @@ class DevDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.file_List)
 
+class InferenceDataset(torch.utils.data.Dataset):
+    def __init__(
+        self,
+        mel_path
+        ):
+        self.file_List = []
+        for root, _, files in os.walk(mel_path):
+            for file in files:
+                if os.path.splitext(file)[1].upper() != '.NPY':
+                    continue
+                self.file_List.append(os.path.join(root, file).replace('\\', '/'))
+        
+    def __getitem__(self, idx):
+        return os.path.basename(self.file_List[idx]), np.load(self.file_List[idx])
+
+    def __len__(self):
+        return len(self.file_List)
+
+
 class Train_Collater:
     def __init__(
         self,
@@ -145,5 +164,35 @@ class Dev_Collater:
         noises = torch.randn(size= audios.size()) # [Batch, Time]
         
         return audios, mels, noises
+
+class Inference_Collater:
+    def __init__(
+        self,
+        frame_Shift,        
+        upsample_Pad,
+        max_Abs_Mel,
+        ):
+        self.frame_Shift = frame_Shift
+        self.upsample_Pad = upsample_Pad
+        self.max_Abs_Mel = max_Abs_Mel
+
+    def __call__(self, batch):
+        max_Mel_Length = max([mel.shape[0] for _, mel in batch])
+        
+        files = []
+        mels = []
+        for index, (file, mel) in enumerate(batch):            
+            mel = np.pad(
+                mel,
+                pad_width=[[self.upsample_Pad, max_Mel_Length - mel.shape[0] + self.upsample_Pad], [0, 0]],
+                constant_values= -self.max_Abs_Mel
+                )
+            files.append(file)
+            mels.append(mel)
+            
+        mels = torch.FloatTensor(np.stack(mels, axis= 0)).transpose(2, 1)   # [Batch, Time, Mel_dim] -> [Batch, Mel_dim, Time]
+        noises = torch.randn(size= (mels.size(0), max_Mel_Length * self.frame_Shift)) # [Batch, Time]
+        
+        return files, mels, noises
 
 

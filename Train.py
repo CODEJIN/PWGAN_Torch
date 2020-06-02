@@ -113,7 +113,7 @@ class Trainer:
                 eps= hp_Dict['Train']['Learning_Rate']['Generator']['Epsilon'],
                 ),
             'Discriminator': RAdam(
-                params= self.model_Dict['Generator'].parameters(),
+                params= self.model_Dict['Discriminator'].parameters(),
                 lr= hp_Dict['Train']['Learning_Rate']['Discriminator']['Initial'],
                 eps= hp_Dict['Train']['Learning_Rate']['Discriminator']['Epsilon'],
                 )
@@ -151,7 +151,7 @@ class Trainer:
                 fake_Discriminations,
                 fake_Discriminations.new_ones(fake_Discriminations.size())
                 )
-            loss_Dict['Generator'] += hp_Dict['Train']['Discriminator_Delay'] * loss_Dict['Adversarial']
+            loss_Dict['Generator'] += hp_Dict['Train']['Adversarial_Weight'] * loss_Dict['Adversarial']
         
         
         self.optimizer_Dict['Generator'].zero_grad()
