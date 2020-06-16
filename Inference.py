@@ -41,6 +41,7 @@ class Inferencer:
         mels = mels.to(device)
         noises = noises.to(device)
         fakes = self.generator(noises, mels).cpu().numpy()
+        fakes /= np.max(np.abs(fakes))
 
         os.makedirs(result_Path, exist_ok= True)
 
@@ -49,9 +50,11 @@ class Inferencer:
             plt.subplot(211)
             plt.imshow(mel, aspect='auto', origin='lower')
             plt.title('Mel spectrogram    File: {}'.format(file))
+            plt.colorbar()
             plt.subplot(212)
             plt.plot(fake)
             plt.title('Inference wav    File: {}'.format(file))
+            plt.colorbar()
             plt.tight_layout()
             plt.savefig(
                 os.path.join(result_Path, file.replace('.npy', '.png')).replace("\\", "/")

@@ -31,7 +31,7 @@ STFT_Loss_Resolution:
 
 Train:
     Use_Pattern_Cache: true
-    Pattern_Path: 'C:/Pattern/WN.Pattern.LJFV'
+    Pattern_Path: 'C:/Pattern/WN.Pattern.LJFVVCTK'
     Metadata_File: 'METADATA.PICKLE'
     Num_Workers: 2
     Batch_Size: 6    

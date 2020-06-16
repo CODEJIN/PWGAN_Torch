@@ -50,7 +50,7 @@ def Pattern_File_Generate(path, speaker_ID, dataset, file_Prefix='', display_Pre
             
     print('[{}]'.format(display_Prefix), '{}'.format(path), '->', '{}'.format(pickle_File_Name))
 
-def Speaker_Index_Dict_Generate(lj, bc2013, fv):
+def Speaker_Index_Dict_Generate(lj, bc2013, fv, vctk):
     speaker_Index_Dict = {}
     current_Index = 0
     if lj:
@@ -61,6 +61,25 @@ def Speaker_Index_Dict_Generate(lj, bc2013, fv):
         current_Index += 1
     if fv:
         for index, speaker in enumerate(['FV.AWB', 'FV.BDL', 'FV.CLB', 'FV.JMK', 'FV.KSP', 'FV.RMS', 'FV.SLT']):
+            speaker_Index_Dict[speaker] = current_Index + index
+
+    if vctk:
+        for index, speaker in enumerate([
+            'VCTK.P233', 'VCTK.P234', 'VCTK.P236', 'VCTK.P237', 'VCTK.P238', 'VCTK.P239', 'VCTK.P240', 'VCTK.P241',
+            'VCTK.P243', 'VCTK.P244', 'VCTK.P245', 'VCTK.P246', 'VCTK.P247', 'VCTK.P248', 'VCTK.P249', 'VCTK.P250',
+            'VCTK.P251', 'VCTK.P252', 'VCTK.P253', 'VCTK.P254', 'VCTK.P255', 'VCTK.P256', 'VCTK.P257', 'VCTK.P258',
+            'VCTK.P259', 'VCTK.P260', 'VCTK.P261', 'VCTK.P262', 'VCTK.P263', 'VCTK.P264', 'VCTK.P265', 'VCTK.P266',
+            'VCTK.P267', 'VCTK.P268', 'VCTK.P269', 'VCTK.P270', 'VCTK.P271', 'VCTK.P272', 'VCTK.P273', 'VCTK.P274',
+            'VCTK.P275', 'VCTK.P276', 'VCTK.P277', 'VCTK.P278', 'VCTK.P279', 'VCTK.P280', 'VCTK.P281', 'VCTK.P282',
+            'VCTK.P283', 'VCTK.P284', 'VCTK.P285', 'VCTK.P286', 'VCTK.P287', 'VCTK.P288', 'VCTK.P292', 'VCTK.P293',
+            'VCTK.P294', 'VCTK.P295', 'VCTK.P297', 'VCTK.P298', 'VCTK.P299', 'VCTK.P300', 'VCTK.P301', 'VCTK.P302',
+            'VCTK.P303', 'VCTK.P304', 'VCTK.P305', 'VCTK.P306', 'VCTK.P307', 'VCTK.P308', 'VCTK.P310', 'VCTK.P311',
+            'VCTK.P312', 'VCTK.P313', 'VCTK.P314', 'VCTK.P315', 'VCTK.P316', 'VCTK.P317', 'VCTK.P318', 'VCTK.P323',
+            'VCTK.P326', 'VCTK.P329', 'VCTK.P330', 'VCTK.P333', 'VCTK.P334', 'VCTK.P335', 'VCTK.P336', 'VCTK.P339',
+            'VCTK.P340', 'VCTK.P341', 'VCTK.P343', 'VCTK.P345', 'VCTK.P347', 'VCTK.P351', 'VCTK.P360', 'VCTK.P361',
+            'VCTK.P362', 'VCTK.P363', 'VCTK.P364', 'VCTK.P374', 'VCTK.P376', 'VCTK.P225', 'VCTK.P226', 'VCTK.P227',
+            'VCTK.P228', 'VCTK.P229', 'VCTK.P230', 'VCTK.P231', 'VCTK.P232',
+            ]):
             speaker_Index_Dict[speaker] = current_Index + index
 
     return speaker_Index_Dict
@@ -126,6 +145,34 @@ def FV_Info_Load(fv_Path):
     print('FV info generated: {}'.format(len(fv_File_Path_List)))
     return fv_File_Path_List, fv_Speaker_Dict
 
+def VCTK_Info_Load(vctk_Path):
+    vctk_Wav_Path = os.path.join(vctk_Path, 'wav48').replace('\\', '/')
+    try:
+        with open(os.path.join(vctk_Path, 'VCTK.NonOutlier.txt').replace('\\', '/'), 'r') as f:
+            vctk_Non_Outlier_List = [x.strip() for x in f.readlines()]
+    except:
+        vctk_Non_Outlier_List = None
+
+    vctk_File_Path_List = []
+    for root, _, files in os.walk(vctk_Wav_Path):
+        for file in files:
+            if not vctk_Non_Outlier_List is None and not file in vctk_Non_Outlier_List:
+                continue
+            wav_File_Path = os.path.join(root, file).replace('\\', '/')
+            if not os.path.splitext(wav_File_Path)[1].upper() in using_Extension:
+                continue
+
+            vctk_File_Path_List.append(wav_File_Path)
+
+    vctk_Speaker_Dict = {
+        path: path.split('/')[-2].upper()
+        for path in vctk_File_Path_List
+        }
+
+    print('VCTK info generated: {}'.format(len(vctk_File_Path_List)))
+    return vctk_File_Path_List, vctk_Speaker_Dict
+
+
 
 def Metadata_Generate():
     new_Metadata_Dict = {
@@ -165,6 +212,7 @@ if __name__ == '__main__':
     argParser.add_argument("-lj", "--lj_path", required=False)
     argParser.add_argument("-bc2013", "--bc2013_path", required=False)
     argParser.add_argument("-fv", "--fv_path", required=False)
+    argParser.add_argument("-vctk", "--vctk_path", required=False)
     argParser.add_argument("-mc", "--max_count", required=False)
     argParser.add_argument("-mw", "--max_worker", required=False)
     argParser.set_defaults(max_worker = 10)
@@ -184,6 +232,9 @@ if __name__ == '__main__':
     if not argument_Dict['fv_path'] is None:
         fv_File_Path_List, fv_Speaker_Dict = FV_Info_Load(fv_Path= argument_Dict['fv_path'])
         total_Pattern_Count += len(fv_File_Path_List)
+    if not argument_Dict['vctk_path'] is None:
+        vctk_File_Path_List, vctk_Speaker_Dict = VCTK_Info_Load(vctk_Path= argument_Dict['vctk_path'])
+        total_Pattern_Count += len(vctk_File_Path_List)
 
     if total_Pattern_Count == 0:
         raise ValueError('Total pattern count is zero.')
@@ -192,6 +243,7 @@ if __name__ == '__main__':
         lj= bool(argument_Dict['lj_path']),
         bc2013= bool(argument_Dict['bc2013_path']),
         fv= bool(argument_Dict['fv_path']),
+        vctk= bool(argument_Dict['vctk_path']),
         )
 
     os.makedirs(hp_Dict['Train']['Pattern_Path'], exist_ok= True)
@@ -248,6 +300,24 @@ if __name__ == '__main__':
                         total_Pattern_Count
                         ),
                     60
+                    )
+                total_Generated_Pattern_Count += 1
+
+        if not argument_Dict['vctk_path'] is None:
+            for index, file_Path in enumerate(vctk_File_Path_List):
+                pe.submit(
+                    Pattern_File_Generate,
+                    file_Path,
+                    speaker_Index_Dict['VCTK.{}'.format(vctk_Speaker_Dict[file_Path])],
+                    'VCTK',                    
+                    '{}.'.format(vctk_Speaker_Dict[file_Path]),
+                    'VCTK {:05d}/{:05d}    Total {:05d}/{:05d}'.format(
+                        index + 1,
+                        len(vctk_File_Path_List),
+                        total_Generated_Pattern_Count,
+                        total_Pattern_Count
+                        ),
+                    15
                     )
                 total_Generated_Pattern_Count += 1
 
