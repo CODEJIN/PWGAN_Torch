@@ -5,7 +5,7 @@ from collections import deque
 from threading import Thread
 from random import shuffle
 
-from Audio import melspectrogram, preemphasis, inv_preemphasis
+from Audio import Audio_Prep, Mel_Generate
 
 with open('Hyper_Parameter.yaml') as f:
     hp_Dict = yaml.load(f, Loader=yaml.Loader)
@@ -13,23 +13,18 @@ with open('Hyper_Parameter.yaml') as f:
 using_Extension = [x.upper() for x in ['.wav', '.m4a', '.flac']]
 
 def Pattern_Generate(path, top_db= 60):
-    sig = librosa.core.load(
-        path,
-        sr = hp_Dict['Sound']['Sample_Rate']
-        )[0]
-    sig = preemphasis(sig)
-    sig = librosa.effects.trim(sig, top_db= top_db, frame_length= 32, hop_length= 16)[0] * 0.99
-    sig = inv_preemphasis(sig)
-
-    mel = np.transpose(melspectrogram(
-        y= sig,
-        num_freq= hp_Dict['Sound']['Spectrogram_Dim'],        
-        hop_length= hp_Dict['Sound']['Frame_Shift'],
-        win_length= hp_Dict['Sound']['Frame_Length'],        
-        num_mels= hp_Dict['Sound']['Mel_Dim'],
+    sig = Audio_Prep(path, hp_Dict['Sound']['Sample_Rate'])    
+    mel = Mel_Generate(
+        audio= sig,
         sample_rate= hp_Dict['Sound']['Sample_Rate'],
+        num_frequency= hp_Dict['Sound']['Spectrogram_Dim'],
+        num_mel= hp_Dict['Sound']['Mel_Dim'],
+        window_length= hp_Dict['Sound']['Frame_Length'],
+        hop_length= hp_Dict['Sound']['Frame_Shift'],        
+        mel_fmin= hp_Dict['Sound']['Mel_F_Min'],
+        mel_fmax= hp_Dict['Sound']['Mel_F_Max'],
         max_abs_value= hp_Dict['Sound']['Max_Abs_Mel']
-        ))
+        )
 
     return sig, mel
 
