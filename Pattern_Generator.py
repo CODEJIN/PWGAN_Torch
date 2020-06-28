@@ -13,14 +13,14 @@ with open('Hyper_Parameter.yaml') as f:
 using_Extension = [x.upper() for x in ['.wav', '.m4a', '.flac']]
 
 def Pattern_Generate(path, top_db= 60):
-    sig = Audio_Prep(path, hp_Dict['Sound']['Sample_Rate'])    
+    sig = Audio_Prep(path, hp_Dict['Sound']['Sample_Rate'], top_db)
     mel = Mel_Generate(
         audio= sig,
         sample_rate= hp_Dict['Sound']['Sample_Rate'],
         num_frequency= hp_Dict['Sound']['Spectrogram_Dim'],
         num_mel= hp_Dict['Sound']['Mel_Dim'],
         window_length= hp_Dict['Sound']['Frame_Length'],
-        hop_length= hp_Dict['Sound']['Frame_Shift'],        
+        hop_length= hp_Dict['Sound']['Frame_Shift'],
         mel_fmin= hp_Dict['Sound']['Mel_F_Min'],
         mel_fmax= hp_Dict['Sound']['Mel_F_Max'],
         max_abs_value= hp_Dict['Sound']['Max_Abs_Mel']

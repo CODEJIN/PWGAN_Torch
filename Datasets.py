@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import librosa, pickle, os
+import pickle, os
 
 
 from Pattern_Generator import Pattern_Generate
@@ -50,7 +50,7 @@ class DevDataset(torch.utils.data.Dataset):
         self.use_cache = use_cache
 
         with open(pattern_path, 'r') as f:
-            self.file_List = [line.strip() for line in f.readlines()]
+            self.file_List = [line.strip().split('\t') for line in f.readlines()[1:]]
 
         self.pattern_Cache_Dict = {}
         
@@ -59,12 +59,12 @@ class DevDataset(torch.utils.data.Dataset):
         if self.use_cache and idx in self.pattern_Cache_Dict.keys():
             return self.pattern_Cache_Dict[idx]
 
-        audio, mel = Pattern_Generate(self.file_List[idx])
+        audio, mel = Pattern_Generate(self.file_List[idx][1], top_db= 30)
 
         if self.use_cache:
-            self.pattern_Cache_Dict[idx] = audio, mel
+            self.pattern_Cache_Dict[idx] = audio, mel, self.file_List[idx][0]
 
-        return audio, mel
+        return audio, mel, self.file_List[idx][0]
 
     def __len__(self):
         return len(self.file_List)
@@ -136,12 +136,13 @@ class Dev_Collater:
         self.max_Abs_Mel = max_Abs_Mel
 
     def __call__(self, batch):
-        max_Wav_Length = int(np.ceil(max([audio.shape[0] for audio, _ in batch]) / self.frame_Shift) * self.frame_Shift)
+        max_Wav_Length = int(np.ceil(max([audio.shape[0] for audio, _, _ in batch]) / self.frame_Shift) * self.frame_Shift)
         wav_Length = np.minimum(self.wav_Length, max_Wav_Length)
         mel_Length = wav_Length // self.frame_Shift + self.upsample_Pad
 
-        audios, mels = [], []
-        for index, (audio, mel) in enumerate(batch):
+        audios, mels, lengths, labels = [], [], [], []
+        for index, (audio, mel, label) in enumerate(batch):
+            length = audio.shape[0]
             audio = audio[0:wav_Length]
             mel = mel[0:mel_Length]
 
@@ -158,12 +159,14 @@ class Dev_Collater:
             
             audios.append(audio)
             mels.append(mel)
+            lengths.append(length)
+            labels.append(label)
             
         audios = torch.FloatTensor(np.stack(audios, axis= 0))   # [Batch, Time]
         mels = torch.FloatTensor(np.stack(mels, axis= 0)).transpose(2, 1)   # [Batch, Time, Mel_dim] -> [Batch, Mel_dim, Time]
         noises = torch.randn(size= audios.size()) # [Batch, Time]
         
-        return audios, mels, noises
+        return audios, mels, noises, lengths, labels
 
 class Inference_Collater:
     def __init__(

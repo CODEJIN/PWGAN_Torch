@@ -45,8 +45,7 @@ class Trainer:
             }
         self.writer = SummaryWriter(hp_Dict['Log_Path'])
 
-        if self.steps > 0:
-            self.Load_Checkpoint()
+        self.Load_Checkpoint()
 
 
     def Datset_Generate(self):
@@ -215,7 +214,7 @@ class Trainer:
 
         self.epochs += 1
 
-    
+
     @torch.no_grad()
     def Evaluation_Step(self, audios, mels, noises):
         loss_Dict = {}
@@ -233,7 +232,7 @@ class Trainer:
                 fake_Discriminations,
                 fake_Discriminations.new_ones(fake_Discriminations.size())
                 )
-            loss_Dict['Generator'] += hp_Dict['Train']['Discriminator_Delay'] * loss_Dict['Adversarial']
+            loss_Dict['Generator'] += hp_Dict['Train']['Adversarial_Weight'] * loss_Dict['Adversarial']
         
         if self.steps > hp_Dict['Train']['Discriminator_Delay']:
             real_Discriminations = self.model_Dict['Discriminator'](audios)
@@ -253,29 +252,35 @@ class Trainer:
             self.loss_Dict['Evaluation'][tag] += loss
 
     @torch.no_grad()
-    def Inference_Step(self, audios, mels, noises):
+    def Inference_Step(self, audios, mels, noises, lengths, labels, start_Index= 0, tag_Step= False, tag_Index= False):
         mels = mels.to(device)
         noises = noises.to(device)
         fakes = self.model_Dict['Generator'](noises, mels).cpu().numpy()
 
         os.makedirs(os.path.join(hp_Dict['Inference_Path'], 'Step-{}'.format(self.steps)).replace("\\", "/"), exist_ok= True)
 
-        for index, (real, fake) in enumerate(zip(audios, fakes)):            
+        for index, (real, fake, length, label) in enumerate(zip(audios, fakes, lengths, labels)):
+            real, fake = real[:length], fake[:length]
             new_Figure = plt.figure(figsize=(80, 10 * 2), dpi=100)
             plt.subplot(211)
             plt.plot(real)
             plt.title('Original wav    Index: {}'.format(index))
-            plt.subplot(212)            
+            plt.subplot(212)
             plt.plot(fake)
             plt.title('Fake wav    Index: {}'.format(index))
             plt.tight_layout()
+            file = '{}{}{}'.format(
+                'Step-{}.'.format(self.steps) if tag_Step else '',
+                label,
+                '.IDX_{}'.format(index + start_Index) if tag_Index else ''
+                )
             plt.savefig(
-                os.path.join(hp_Dict['Inference_Path'], 'Step-{}'.format(self.steps), 'Step-{}.IDX_{}.PNG'.format(self.steps, index)).replace("\\", "/")
+                os.path.join(hp_Dict['Inference_Path'], 'Step-{}'.format(self.steps), '{}.PNG'.format(file)).replace("\\", "/")
                 )
             plt.close(new_Figure)
 
             wavfile.write(
-                filename= os.path.join(hp_Dict['Inference_Path'], 'Step-{}'.format(self.steps), 'Step-{}.IDX_{}.WAV'.format(self.steps, index)).replace("\\", "/"),
+                filename= os.path.join(hp_Dict['Inference_Path'], 'Step-{}'.format(self.steps), '{}.WAV'.format(file)).replace("\\", "/"),
                 data= (fake * 32767.5).astype(np.int16),
                 rate= hp_Dict['Sound']['Sample_Rate']
                 )
@@ -286,9 +291,9 @@ class Trainer:
         for model in self.model_Dict.values():
             model.eval()
 
-        for step, (audios, mels, noises) in tqdm(enumerate(self.dataLoader_Dict['Dev'], 1), desc='[Evaluation]'):
+        for step, (audios, mels, noises, lengths, labels) in tqdm(enumerate(self.dataLoader_Dict['Dev'], 1), desc='[Evaluation]'):
             self.Evaluation_Step(audios, mels, noises)
-            self.Inference_Step(audios, mels, noises)
+            self.Inference_Step(audios, mels, noises, lengths, labels, start_Index= step * hp_Dict['Train']['Batch_Size'])
 
         self.loss_Dict['Evaluation'] = {
             tag: loss / step
@@ -299,13 +304,24 @@ class Trainer:
         
         for model in self.model_Dict.values():
             model.train()
-        
+
 
     def Load_Checkpoint(self):
-        state_Dict = torch.load(
-            os.path.join(hp_Dict['Checkpoint_Path'], 'S_{}.pkl'.format(self.steps).replace('\\', '/')),
-            map_location= 'cpu'
-            )
+        if self.steps == 0:
+            path = None
+            for root, _, files in os.walk(hp_Dict['Checkpoint_Path']):
+                path = max(
+                    [os.path.join(root, file).replace('\\', '/') for file in files],
+                    key = os.path.getctime
+                    )
+                break
+            if path is None:
+                return  # Initial training
+        else:
+            path = os.path.join(hp_Dict['Checkpoint_Path'], 'S_{}.pt'.format(self.steps).replace('\\', '/'))
+
+
+        state_Dict = torch.load(path, map_location= 'cpu')
 
         self.model_Dict['Generator'].load_state_dict(state_Dict['Model']['Generator'])
         self.model_Dict['Discriminator'].load_state_dict(state_Dict['Model']['Discriminator'])
@@ -347,7 +363,7 @@ class Trainer:
             )
 
         logging.info('Checkpoint saved at {} steps.'.format(self.steps))
-       
+
 
     def Train(self):
         self.tqdm = tqdm(
@@ -355,6 +371,9 @@ class Trainer:
             total= hp_Dict['Train']['Max_Step'],
             desc='[Training]'
             )
+
+        if hp_Dict['Train']['Initial_Inference']:
+            self.Evaluation_Epoch()
 
         while self.steps < hp_Dict['Train']['Max_Step']:
             try:

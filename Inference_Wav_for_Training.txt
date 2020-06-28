@@ -1,4 +1,5 @@
-./Wav_for_Inference/FV.AWB.arctic_a0001.wav
-./Wav_for_Inference/LJ.LJ050-0278.wav
-./Wav_for_Inference/VCTK.p226_370.wav
-./Wav_for_Inference/KSS.4_0026.wav
+Label	File
+SR16	./Wav_for_Inference/FV.AWB.arctic_a0001.wav
+SR22	./Wav_for_Inference/LJ.LJ050-0278.wav
+TRAINED	./Wav_for_Inference/VCTK.p226_370.wav
+KOR	./Wav_for_Inference/KSS.4_0026.wav

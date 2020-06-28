@@ -4,6 +4,7 @@ Sound:
     Frame_Length: 1024
     Frame_Shift: 256
     Sample_Rate: 24000
+    # Sample_Rate: 16000
     Mel_F_Min: 125
     Mel_F_Max: 7600
     Max_Abs_Mel: 4
@@ -24,7 +25,7 @@ WaveNet:
 Discriminator:
     Stacks: 10
     Channels: 64
-    Kernel_Size: 3    
+    Kernel_Size: 3
 
 STFT_Loss_Resolution:
     FFT_Sizes: [1024, 2048, 512]
@@ -33,18 +34,19 @@ STFT_Loss_Resolution:
 
 Train:
     Use_Pattern_Cache: true
-    Pattern_Path: 'C:/Pattern/WN.Pattern.LJFVVCTK'
+    Pattern_Path: 'C:/Pattern/Vocoder.24K.Pattern.VCTK'
+    # Pattern_Path: 'C:/Pattern/Vocoder.16K.Pattern.VCTK'
     Metadata_File: 'METADATA.PICKLE'
     Num_Workers: 2
-    Batch_Size: 6    
+    Batch_Size: 6
     Wav_Length: 25600
-    Max_Pattern_Queue: 100          
+    Max_Pattern_Queue: 100
     Learning_Rate:
         Discriminator: 
             Initial: 5.0e-5
             Epsilon: 1.0e-6
             Decay_Step: 200000
-            Decay_Rate: 0.5            
+            Decay_Rate: 0.5
         Generator : 
             Initial: 1.0e-4
             Epsilon: 1.0e-6
@@ -59,13 +61,16 @@ Train:
     Generator_Gradient_Norm: 10.0
     Discriminator_Gradient_Norm: 1.0
     Max_Step: 400000
-    Checkpoint_Save_Interval: 5000
+    Checkpoint_Save_Interval: 1000
     Logging_Interval: 100
     Evaluation_Interval: 1000
-    Initial_Inference: false
+    Initial_Inference: true
 
 Use_Mixed_Precision: false
-Inference_Path: 'D:/PWGAN.LJFV.Results/Inference'
-Checkpoint_Path: 'D:/PWGAN.LJFV.Results/Checkpoint'
-Log_Path: 'D:/PWGAN.LJFV.Results/Log'
+Inference_Path: 'D:/PWGAN.Results/SR24K.Results/Inference'
+Checkpoint_Path: 'D:/PWGAN.Results/SR24K.Results/Checkpoint'
+Log_Path: 'D:/PWGAN.Results/SR24K.Results/Log'
+# Inference_Path: 'D:/PWGAN.Results/SR16K.Results/Inference'
+# Checkpoint_Path: 'D:/PWGAN.Results/SR16K.Results/Checkpoint'
+# Log_Path: 'D:/PWGAN.Results/SR16K.Results/Log'
 Device: '0'
