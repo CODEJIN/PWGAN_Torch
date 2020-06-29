@@ -13,6 +13,10 @@ Yamamoto, R., Song, E., & Kim, J. M. (2020, May). Parallel WaveGAN: A fast wavef
 * tensorboardX == 2.0
 * librosa >= 0.7.2
 
+* Optional    
+    * tensorboard >= 2.2.2 (for loss flow)
+    * apex >= 0.1 (for mixed precision)
+
 # Structrue
 ![Structure](./Figures/Structure.png)
 
@@ -48,9 +52,6 @@ Before proceeding, please set the pattern, inference, and checkpoint paths in 'H
     * Setting the parameters of training.    
     * Wav length must be a multiple of frame shift size of sound.
     
-* Use_Mixed_Precision
-    * __Currently, this parameters is ignored.__ 
-       
 * Inference_Path
     * Setting the inference path
 
@@ -59,6 +60,10 @@ Before proceeding, please set the pattern, inference, and checkpoint paths in 'H
 
 * Log_Path
     * Setting the tensorboard log path
+
+* Use_Mixed_Precision
+    * If true, mixed preicision is used.
+    * This option requires `nividia apex` module.
 
 * Device
     * Setting which GPU device is used in multi-GPU enviornment.

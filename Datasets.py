@@ -19,10 +19,7 @@ class TrainDataset(torch.utils.data.Dataset):
         with open(os.path.join(self.pattern_path, metadata_file).replace('\\', '/'), 'rb') as f:
             metadata_Dict = pickle.load(f)
         
-        self.file_List = [
-            file for file, length in metadata_Dict['Sig_Length_Dict'].items()
-            if length > wav_length
-            ]
+        self.file_List = metadata_Dict['File_List']
         
         self.pattern_Cache_Dict = {}
 
@@ -93,34 +90,48 @@ class Train_Collater:
         self,
         wav_Length,
         frame_Shift,
-        upsample_Pad,
+        upsample_Pad,        
         ):
         self.wav_Length = wav_Length
         self.frame_Shift = frame_Shift
         self.upsample_Pad = upsample_Pad
-        self.mel_Length = wav_Length // frame_Shift + 2 * upsample_Pad
+        self.mel_Length = wav_Length // frame_Shift
 
     def __call__(self, batch):        
-        audios, mels = [], []
-        for index, (audio, mel) in enumerate(batch):            
-            max_Offset = mel.shape[0] - 2 - (self.mel_Length + 2 * self.upsample_Pad)
-            if max_Offset <= 0:
-                continue
-                
-            mel_Offset = np.random.randint(0, max_Offset)
-            audio_Offset = (mel_Offset + self.upsample_Pad) * self.frame_Shift
+        audios, mels = self.Stack(*zip(*batch))
 
-            audio = audio[audio_Offset:audio_Offset + self.wav_Length]
-            mel = mel[mel_Offset:mel_Offset + self.mel_Length]
-
-            audios.append(audio)
-            mels.append(mel)
-                
-        audios = torch.FloatTensor(np.stack(audios, axis= 0))   # [Batch, Time]
-        mels = torch.FloatTensor(np.stack(mels, axis= 0)).transpose(2, 1)   # [Batch, Time, Mel_dim] -> [Batch, Mel_dim, Time]
+        audios = torch.FloatTensor(audios)   # [Batch, Time]
+        mels = torch.FloatTensor(mels).transpose(2, 1)   # [Batch, Time, Mel_dim] -> [Batch, Mel_dim, Time]
         noises = torch.randn(size= audios.size()) # [Batch, Time]
 
         return audios, mels, noises
+
+    def Stack(self, audios, mels):
+        audio_List = []
+        mel_List = []
+        for audio, mel in zip(audios, mels):
+            mel_Pad = max(0, self.mel_Length + 2 * self.upsample_Pad - mel.shape[0])
+            audio_Pad = max(0, self.wav_Length + 2 * self.upsample_Pad * self.frame_Shift - audio.shape[0])
+            mel = np.pad(
+                mel,
+                [[int(np.floor(mel_Pad / 2)), int(np.ceil(mel_Pad / 2))], [0, 0]],
+                mode= 'reflect'
+                )            
+            audio = np.pad(
+                audio,
+                [int(np.floor(audio_Pad / 2)), int(np.ceil(audio_Pad / 2))],
+                mode= 'reflect'
+                )
+
+            mel_Offset = np.random.randint(self.upsample_Pad, max(mel.shape[0] - (self.mel_Length + self.upsample_Pad), self.upsample_Pad + 1))
+            audio_Offset = mel_Offset * self.frame_Shift
+            mel = mel[mel_Offset - self.upsample_Pad:mel_Offset + self.mel_Length + self.upsample_Pad]
+            audio = audio[audio_Offset:audio_Offset + self.wav_Length]
+
+            audio_List.append(audio)
+            mel_List.append(mel)
+
+        return np.stack(audio_List, axis= 0), np.stack(mel_List, axis= 0)
 
 class Dev_Collater:
     def __init__(

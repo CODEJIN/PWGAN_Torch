@@ -129,9 +129,21 @@ class Trainer:
                 gamma= hp_Dict['Train']['Learning_Rate']['Discriminator']['Decay_Rate'],
                 )
             }
+
+        if hp_Dict['Use_Mixed_Precision']:
+            try:
+                from apex import amp
+                amp_Wrapped = amp.initialize(
+                    models=[self.model_Dict['Generator'], self.model_Dict['Discriminator']],
+                    optimizers=[self.optimizer_Dict['Generator'], self.optimizer_Dict['Discriminator']]
+                    )
+                self.model_Dict['Generator'], self.model_Dict['Discriminator'] = amp_Wrapped[0]
+                self.optimizer_Dict['Generator'], self.optimizer_Dict['Discriminator'] = amp_Wrapped[1]
+            except:
+                logging.info('There is no apex modules in the environment. Mixed precision does not work.')
+        
         logging.info(self.model_Dict['Generator'])
         logging.info(self.model_Dict['Discriminator'])
-
 
     def Train_Step(self, audios, mels, noises):
         loss_Dict = {}

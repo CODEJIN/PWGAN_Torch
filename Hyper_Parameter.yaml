@@ -47,7 +47,7 @@ Train:
             Epsilon: 1.0e-6
             Decay_Step: 200000
             Decay_Rate: 0.5
-        Generator : 
+        Generator:
             Initial: 1.0e-4
             Epsilon: 1.0e-6
             Decay_Step: 200000
@@ -64,13 +64,13 @@ Train:
     Checkpoint_Save_Interval: 1000
     Logging_Interval: 100
     Evaluation_Interval: 1000
-    Initial_Inference: true
+    Initial_Inference: false
 
-Use_Mixed_Precision: false
 Inference_Path: 'D:/PWGAN.Results/SR24K.Results/Inference'
 Checkpoint_Path: 'D:/PWGAN.Results/SR24K.Results/Checkpoint'
 Log_Path: 'D:/PWGAN.Results/SR24K.Results/Log'
 # Inference_Path: 'D:/PWGAN.Results/SR16K.Results/Inference'
 # Checkpoint_Path: 'D:/PWGAN.Results/SR16K.Results/Checkpoint'
 # Log_Path: 'D:/PWGAN.Results/SR16K.Results/Log'
+Use_Mixed_Precision: false  # apex is required.
 Device: '0'
