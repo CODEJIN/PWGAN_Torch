@@ -3,8 +3,8 @@ Sound:
     Mel_Dim: 80
     Frame_Length: 1024
     Frame_Shift: 256
-    Sample_Rate: 24000
-    # Sample_Rate: 16000
+    # Sample_Rate: 24000
+    Sample_Rate: 16000
     Mel_F_Min: 125
     Mel_F_Max: 7600
     Max_Abs_Mel: 4
@@ -33,12 +33,12 @@ STFT_Loss_Resolution:
     Win_Lengths: [600, 1200, 240]
 
 Train:
-    Use_Pattern_Cache: true
-    Pattern_Path: 'C:/Pattern/Vocoder.24K.Pattern.VCTK'
-    # Pattern_Path: 'C:/Pattern/Vocoder.16K.Pattern.VCTK'
+    Use_Pattern_Cache: false
+    # Pattern_Path: 'C:/Pattern/Vocoder.24K.Pattern.VCTKLibri'
+    Pattern_Path: 'C:/Pattern/Vocoder.16K.Pattern.VCTKLibri'
     Metadata_File: 'METADATA.PICKLE'
     Num_Workers: 2
-    Batch_Size: 6
+    Batch_Size: 8
     Wav_Length: 25600
     Max_Pattern_Queue: 100
     Learning_Rate:
@@ -66,11 +66,11 @@ Train:
     Evaluation_Interval: 1000
     Initial_Inference: false
 
-Inference_Path: 'D:/PWGAN.Results/SR24K.Results/Inference'
-Checkpoint_Path: 'D:/PWGAN.Results/SR24K.Results/Checkpoint'
-Log_Path: 'D:/PWGAN.Results/SR24K.Results/Log'
-# Inference_Path: 'D:/PWGAN.Results/SR16K.Results/Inference'
-# Checkpoint_Path: 'D:/PWGAN.Results/SR16K.Results/Checkpoint'
-# Log_Path: 'D:/PWGAN.Results/SR16K.Results/Log'
-Use_Mixed_Precision: false  # apex is required.
+# Inference_Path: 'D:/PWGAN.Results/SR24K.Results/Inference'
+# Checkpoint_Path: 'D:/PWGAN.Results/SR24K.Results/Checkpoint'
+# Log_Path: 'D:/PWGAN.Results/SR24K.Results/Log'
+Inference_Path: 'D:/PWGAN.Results/SR16K.Results.VCTKLibri/Inference'
+Checkpoint_Path: 'D:/PWGAN.Results/SR16K.Results.VCTKLibri/Checkpoint'
+Log_Path: 'D:/PWGAN.Results/SR16K.Results.VCTKLibri/Log'
+Use_Mixed_Precision: true  # apex is required.
 Device: '0'

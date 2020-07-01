@@ -25,7 +25,7 @@ class TrainDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         if idx in self.pattern_Cache_Dict.keys():
-            return self.pattern_Cache_Dict[idx]['Signal'], self.pattern_Cache_Dict[idx]['Mel']
+            return self.pattern_Cache_Dict[idx]['Audio'], self.pattern_Cache_Dict[idx]['Mel']
 
         with open(os.path.join(self.pattern_path, self.file_List[idx]).replace('\\', '/'), 'rb') as f:
             pattern_Dict = pickle.load(f)
@@ -33,7 +33,7 @@ class TrainDataset(torch.utils.data.Dataset):
         if self.use_cache:
             self.pattern_Cache_Dict[idx] = pattern_Dict
 
-        return pattern_Dict['Signal'], pattern_Dict['Mel']
+        return pattern_Dict['Audio'], pattern_Dict['Mel']
 
     def __len__(self):
         return len(self.file_List)
@@ -149,7 +149,7 @@ class Dev_Collater:
     def __call__(self, batch):
         max_Wav_Length = int(np.ceil(max([audio.shape[0] for audio, _, _ in batch]) / self.frame_Shift) * self.frame_Shift)
         wav_Length = np.minimum(self.wav_Length, max_Wav_Length)
-        mel_Length = wav_Length // self.frame_Shift + self.upsample_Pad
+        mel_Length = wav_Length // self.frame_Shift
 
         audios, mels, lengths, labels = [], [], [], []
         for index, (audio, mel, label) in enumerate(batch):
@@ -164,7 +164,7 @@ class Dev_Collater:
                 )
             mel = np.pad(
                 mel,
-                pad_width=[[self.upsample_Pad, mel_Length - mel.shape[0]], [0, 0]],
+                pad_width=[[self.upsample_Pad, mel_Length - mel.shape[0] + self.upsample_Pad], [0, 0]],
                 constant_values= -self.max_Abs_Mel
                 )
             
