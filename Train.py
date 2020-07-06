@@ -31,6 +31,13 @@ logging.basicConfig(
         level=logging.INFO, stream=sys.stdout,
         format="%(asctime)s (%(module)s:%(lineno)d) %(levelname)s: %(message)s")
 
+if hp_Dict['Use_Mixed_Precision']:
+    try:
+        from apex import amp
+    except:
+        logging.info('There is no apex modules in the environment. Mixed precision does not work.')
+        hp_Dict['Use_Mixed_Precision'] = False
+
 class Trainer:
     def __init__(self, steps= 0):
         self.steps = steps
@@ -131,16 +138,12 @@ class Trainer:
             }
 
         if hp_Dict['Use_Mixed_Precision']:
-            try:
-                from apex import amp
-                amp_Wrapped = amp.initialize(
-                    models=[self.model_Dict['Generator'], self.model_Dict['Discriminator']],
-                    optimizers=[self.optimizer_Dict['Generator'], self.optimizer_Dict['Discriminator']]
-                    )
-                self.model_Dict['Generator'], self.model_Dict['Discriminator'] = amp_Wrapped[0]
-                self.optimizer_Dict['Generator'], self.optimizer_Dict['Discriminator'] = amp_Wrapped[1]
-            except:
-                logging.info('There is no apex modules in the environment. Mixed precision does not work.')
+            amp_Wrapped = amp.initialize(
+                models=[self.model_Dict['Generator'], self.model_Dict['Discriminator']],
+                optimizers=[self.optimizer_Dict['Generator'], self.optimizer_Dict['Discriminator']]
+                )
+            self.model_Dict['Generator'], self.model_Dict['Discriminator'] = amp_Wrapped[0]
+            self.optimizer_Dict['Generator'], self.optimizer_Dict['Discriminator'] = amp_Wrapped[1]
         
         logging.info(self.model_Dict['Generator'])
         logging.info(self.model_Dict['Discriminator'])
@@ -166,7 +169,11 @@ class Trainer:
         
         
         self.optimizer_Dict['Generator'].zero_grad()
-        loss_Dict['Generator'].backward()        
+        if hp_Dict['Use_Mixed_Precision']:
+            with amp.scale_loss(loss_Dict['Generator'], self.optimizer_Dict['Generator']) as scaled_loss:
+                scaled_loss.backward()
+        else:
+            loss_Dict['Generator'].backward()
         torch.nn.utils.clip_grad_norm_(
             parameters= self.model_Dict['Generator'].parameters(),
             max_norm= hp_Dict['Train']['Generator_Gradient_Norm']
@@ -189,7 +196,11 @@ class Trainer:
             loss_Dict['Discriminator'] = loss_Dict['Real'] + loss_Dict['Fake']
 
             self.optimizer_Dict['Discriminator'].zero_grad()
-            loss_Dict['Discriminator'].backward()
+            if hp_Dict['Use_Mixed_Precision']:
+                with amp.scale_loss(loss_Dict['Discriminator'], self.optimizer_Dict['Discriminator']) as scaled_loss:
+                    scaled_loss.backward()
+            else:
+                loss_Dict['Discriminator'].backward()
             torch.nn.utils.clip_grad_norm_(
                 parameters= self.model_Dict['Discriminator'].parameters(),
                 max_norm= hp_Dict['Train']['Discriminator_Gradient_Norm']
@@ -347,6 +358,12 @@ class Trainer:
         self.steps = state_Dict['Steps']
         self.epochs = state_Dict['Epochs']
 
+        if hp_Dict['Use_Mixed_Precision']:
+            if not 'AMP' in state_Dict.keys():
+                logging.info('No AMP state dict is in the checkpoint. Model regards this checkpoint is trained without mixed precision.')
+            else:                
+                amp.load_state_dict(state_Dict['AMP'])
+
         logging.info('Checkpoint loaded at {} steps.'.format(self.steps))
 
     def Save_Checkpoint(self):
@@ -368,6 +385,8 @@ class Trainer:
             'Steps': self.steps,
             'Epochs': self.epochs,
             }
+        if hp_Dict['Use_Mixed_Precision']:
+            state_Dict['AMP'] = amp.state_dict()
 
         torch.save(
             state_Dict,

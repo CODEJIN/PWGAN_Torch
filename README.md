@@ -26,10 +26,10 @@ Currently uploaded code is compatible with the following datasets. The O mark to
 ```
 [O] LJSpeech: https://keithito.com/LJ-Speech-Dataset/
 [X] VCTK: https://datashare.is.ed.ac.uk/handle/10283/2651
-[X] LibriSpeech: https://www.openslr.org/12
+[O] LibriSpeech: https://www.openslr.org/12
 [X] TIMIT: http://academictorrents.com/details/34e2b78745138186976cbc27939b1b34d18bd5b3
 [X] Blizzard Challenge 2013: http://www.cstr.ed.ac.uk/projects/blizzard/
-[O] FastVox: http://www.festvox.org/cmu_arctic/index.html
+[X] CMUArctic: http://www.festvox.org/cmu_arctic/index.html
 ```
 
 # Hyper parameters

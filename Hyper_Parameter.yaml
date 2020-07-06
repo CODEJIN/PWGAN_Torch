@@ -38,7 +38,7 @@ Train:
     Pattern_Path: 'C:/Pattern/Vocoder.16K.Pattern.VCTKLibri'
     Metadata_File: 'METADATA.PICKLE'
     Num_Workers: 2
-    Batch_Size: 8
+    Batch_Size: 24
     Wav_Length: 25600
     Max_Pattern_Queue: 100
     Learning_Rate:
@@ -64,7 +64,7 @@ Train:
     Checkpoint_Save_Interval: 1000
     Logging_Interval: 100
     Evaluation_Interval: 1000
-    Initial_Inference: false
+    Initial_Inference: true
 
 # Inference_Path: 'D:/PWGAN.Results/SR24K.Results/Inference'
 # Checkpoint_Path: 'D:/PWGAN.Results/SR24K.Results/Checkpoint'
