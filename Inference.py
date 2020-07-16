@@ -14,16 +14,6 @@ from Datasets import InferenceDataset, Inference_Collater
 with open('Hyper_Parameter.yaml') as f:
     hp_Dict = yaml.load(f, Loader=yaml.Loader)
 
-if not hp_Dict['Device'] is None:
-    os.environ['CUDA_VISIBLE_DEVICES']= hp_Dict['Device']
-
-if not torch.cuda.is_available():
-    device = torch.device('cpu')
-else:
-    device = torch.device('cuda:0')
-    torch.backends.cudnn.benchmark = True
-    torch.cuda.set_device(0)
-
 logging.basicConfig(
         level=logging.INFO, stream=sys.stdout,
         format="%(asctime)s (%(module)s:%(lineno)d) %(levelname)s: %(message)s")
@@ -54,6 +44,7 @@ class Inferencer:
             plt.subplot(212)
             plt.plot(fake)
             plt.title('Inference wav    File: {}'.format(file))
+            plt.margins(x= 0)
             plt.colorbar()
             plt.tight_layout()
             plt.savefig(
@@ -108,7 +99,17 @@ if __name__ == '__main__':
     argParser.add_argument('-c', '--checkpoint', required= True)
     argParser.add_argument('-m', '--mel', required= True)
     argParser.add_argument('-r', '--result', default='./results')
+    argParser.add_argument('-gpu', '--gpu', default='-1')
     args = argParser.parse_args()
+
+    os.environ['CUDA_VISIBLE_DEVICES']= args.gpu
+
+    if not torch.cuda.is_available():
+        device = torch.device('cpu')
+    else:
+        device = torch.device('cuda:0')
+        torch.backends.cudnn.benchmark = True
+        torch.cuda.set_device(0)
     
     new_Inferencer = Inferencer(checkpoint_Path= args.checkpoint)
     new_Inferencer.Inference(

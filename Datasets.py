@@ -195,7 +195,7 @@ class Inference_Collater:
         
         files = []
         mels = []
-        for index, (file, mel) in enumerate(batch):            
+        for index, (file, mel) in enumerate(batch):
             mel = np.pad(
                 mel,
                 pad_width=[[self.upsample_Pad, max_Mel_Length - mel.shape[0] + self.upsample_Pad], [0, 0]],
@@ -203,7 +203,7 @@ class Inference_Collater:
                 )
             files.append(file)
             mels.append(mel)
-            
+
         mels = torch.FloatTensor(np.stack(mels, axis= 0)).transpose(2, 1)   # [Batch, Time, Mel_dim] -> [Batch, Mel_dim, Time]
         noises = torch.randn(size= (mels.size(0), max_Mel_Length * self.frame_Shift)) # [Batch, Time]
         

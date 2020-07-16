@@ -288,9 +288,11 @@ class Trainer:
             plt.subplot(211)
             plt.plot(real)
             plt.title('Original wav    Index: {}'.format(index))
+            plt.margins(x= 0)
             plt.subplot(212)
             plt.plot(fake)
             plt.title('Fake wav    Index: {}'.format(index))
+            plt.margins(x= 0)
             plt.tight_layout()
             file = '{}{}{}'.format(
                 'Step-{}.'.format(self.steps) if tag_Step else '',

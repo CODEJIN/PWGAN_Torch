@@ -63,7 +63,7 @@ class Generator(torch.nn.Module):
                 skips += new_Skips
         skips *= math.sqrt(1.0 / (hp_Dict['WaveNet']['ResConvGLU']['Blocks'] * hp_Dict['WaveNet']['ResConvGLU']['Stacks_in_Block']))
 
-        logits = self.layer_Dict['Last'](skips)        
+        logits = self.layer_Dict['Last'](skips)
 
         return logits
 
@@ -94,7 +94,7 @@ class Discriminator(torch.nn.Module):
 
         previous_Channels = 1        
         for index in range(hp_Dict['Discriminator']['Stacks'] - 1):
-            dilation = index + 1
+            dilation = max(1, index)
             padding = (hp_Dict['Discriminator']['Kernel_Size'] - 1) // 2 * dilation
             self.layer.add_module('Conv_{}'.format(index), Conv1d(
                 in_channels= previous_Channels,

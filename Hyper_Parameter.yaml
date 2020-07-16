@@ -64,7 +64,7 @@ Train:
     Checkpoint_Save_Interval: 1000
     Logging_Interval: 100
     Evaluation_Interval: 1000
-    Initial_Inference: true
+    Initial_Inference: false
 
 # Inference_Path: 'D:/PWGAN.Results/SR24K.Results/Inference'
 # Checkpoint_Path: 'D:/PWGAN.Results/SR24K.Results/Checkpoint'
