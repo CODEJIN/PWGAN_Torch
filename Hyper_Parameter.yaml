@@ -38,7 +38,7 @@ Train:
     Pattern_Path: 'C:/Pattern/Vocoder.16K.Pattern.VCTKLibri'
     Metadata_File: 'METADATA.PICKLE'
     Num_Workers: 2
-    Batch_Size: 24
+    Batch_Size: 4
     Wav_Length: 25600
     Max_Pattern_Queue: 100
     Learning_Rate:

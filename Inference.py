@@ -30,6 +30,7 @@ class Inferencer:
     def Inference_Step(self, files, mels, noises, result_Path):
         mels = mels.to(device)
         noises = noises.to(device)
+        mels.clamp_(min= -hp_Dict['Sound']['Max_Abs_Mel'], max= hp_Dict['Sound']['Max_Abs_Mel'])
         fakes = self.generator(noises, mels).cpu().numpy()
         fakes /= np.max(np.abs(fakes))
 
@@ -92,7 +93,8 @@ class Inferencer:
             checkpoint_Path,
             map_location= 'cpu'
             )
-        self.generator.load_state_dict(state_Dict['Model']['Generator'])        
+        self.generator.load_state_dict(state_Dict['Model']['Generator'])
+        self.generator.remove_weight_norm()
 
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()

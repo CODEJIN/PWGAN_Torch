@@ -79,7 +79,7 @@ class Generator(torch.nn.Module):
 
     def apply_weight_norm(self):
         def _apply_weight_norm(m):
-            if isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv2d):                
+            if isinstance(m, torch.nn.Conv1d) or isinstance(m, torch.nn.Conv2d):
                 torch.nn.utils.weight_norm(m)
                 logging.debug(f'Weight norm is applied to {m}.')
 
@@ -243,12 +243,12 @@ class MultiResolutionSTFTLoss(torch.nn.Module):
         ):
         super(MultiResolutionSTFTLoss, self).__init__()
 
+        self.layer_Dict = torch.nn.ModuleDict()
         for index, (fft_Size, shift_Length, win_Length) in enumerate(zip(
             fft_sizes,
             shift_lengths,
             win_lengths
-            )):
-            self.layer_Dict = torch.nn.ModuleDict()
+            )):            
             self.layer_Dict['STFTLoss_{}'.format(index)] = STFTLoss(
                 fft_size= fft_Size,
                 shift_length= shift_Length,
